@@ -1,0 +1,32 @@
+{
+  "name": "@b3pay/tronlink",
+  "keywords": [
+    "web3-react",
+    "tronlink"
+  ],
+  "author": "Behrad Deylami <b3hr4d@live.com>",
+  "license": "GPL-3.0-or-later",
+  "repository": "github.com/b3pay/tronlink",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "1.0.0-beta.1",
+  "files": [
+    "dist/*"
+  ],
+  "type": "commonjs",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "start": "tsc --watch"
+  },
+  "dependencies": {
+    "@web3-react/types": "^8.0.20-beta.0"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1"
+  }
+}
