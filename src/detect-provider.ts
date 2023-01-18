@@ -1,25 +1,32 @@
-interface TronlinkTronProvider {
-  isTronLink?: boolean
-  request: (request: { method: string; params?: unknown[] }) => Promise<unknown>
-  once(eventName: string | symbol, listener: (...args: any[]) => void): this
-  on(eventName: string | symbol, listener: (...args: any[]) => void): this
-  off(eventName: string | symbol, listener: (...args: any[]) => void): this
-  addListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void
-  ): this
-  removeListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void
-  ): this
-  removeAllListeners(event?: string | symbol): this
+import type { Provider } from "@web3-react/types"
+
+export type TronLinkProvider = Provider & {
+  on: (event: string, handler: (arg: any) => void) => void
+  defaultAddress: {
+    base58: string
+    hex: string
+    name: string
+    type: number
+  }
+  isConnected?: () => boolean
+  providers?: TronLinkProvider[]
+}
+
+export type TronLinkWallet = {
+  isTronLink: boolean
+  ready: boolean //Initialize to false, true after user authorization
+  request: (args: any) => Promise<{ message: string; code: number }> // The method of tuning plugins for dapp website
+  sunWeb: TronLinkProvider
+  tronWeb: TronLinkProvider & {
+    trx: TronLinkProvider
+  }
 }
 
 interface Window {
-  tronLink?: TronlinkTronProvider
+  tronLink?: TronLinkWallet
 }
 
-export = detectTronProvider
+export type DetectTronProvider = typeof detectTronProvider
 
 /**
  * Returns a Promise that resolves to the value of window.tronLink if it is
@@ -37,8 +44,7 @@ export = detectTronProvider
  * @returns A Promise that resolves with the Provider if it is detected within
  * given timeout, otherwise null.
  */
-function detectTronProvider<T = TronlinkTronProvider>({
-  mustBeTronLink = false,
+export default function detectTronProvider<T = TronLinkWallet>({
   silent = false,
   timeout = 3000,
 } = {}): Promise<T | null> {
@@ -69,34 +75,29 @@ function detectTronProvider<T = TronlinkTronProvider>({
 
       const { tronLink } = window as Window
 
-      if (tronLink && (!mustBeTronLink || tronLink.isTronLink)) {
+      if (tronLink) {
+        tronLink.isTronLink = true
         resolve(tronLink as unknown as T)
       } else {
-        const message =
-          mustBeTronLink && tronLink
-            ? "Non-TronLink window.tronLink detected."
-            : "Unable to detect window.tronLink."
+        const message = tronLink
+          ? "TronLink is not ready!"
+          : "Unable to detect window.tronLink."
 
-        !silent && console.error("@metamask/detect-provider:", message)
+        !silent && console.error("tronlink/detect-provider:", message)
         resolve(null)
       }
     }
   })
 
   function _validateInputs() {
-    if (typeof mustBeTronLink !== "boolean") {
-      throw new Error(
-        `@metamask/detect-provider: Expected option 'mustBeTronLink' to be a boolean.`
-      )
-    }
     if (typeof silent !== "boolean") {
       throw new Error(
-        `@metamask/detect-provider: Expected option 'silent' to be a boolean.`
+        `tronlink/detect-provider: Expected option 'silent' to be a boolean.`
       )
     }
     if (typeof timeout !== "number") {
       throw new Error(
-        `@metamask/detect-provider: Expected option 'timeout' to be a number.`
+        `tronlink/detect-provider: Expected option 'timeout' to be a number.`
       )
     }
   }
